@@ -1,0 +1,127 @@
+# BTL
+#include<iostream>
+using namespace std;
+/* Link list node */
+struct Node
+{
+	int data;
+	struct Node* next; //là địa chỉ con trỏ tiếp (lưu cả giá trị và địa chỉ của con trỏ tiếp theo sau no
+};
+
+struct Node* SortedMerge(struct Node* a, struct Node* b);
+void FrontBackSplit(struct Node* source,
+	struct Node** frontRef, struct Node** backRef);
+
+/* sorts the linked list by changing next pointers (not data) */
+void MergeSort(struct Node** headRef)
+{
+	struct Node* head = *headRef;
+	struct Node* a;
+	struct Node* b;
+
+	/* Base case -- length 0 or 1 */
+	if ((head == NULL) || (head->next == NULL)) //next array
+	{
+		return;
+	}
+
+	/* Chia thành 2 ds con a và b */
+	FrontBackSplit(head, &a, &b);
+
+	/* Dùng đệ quy kiểm tra a,b  */
+	MergeSort(&a);
+	MergeSort(&b);
+
+	/* gộp 2 ds được sắp xếp lại vs nhau */
+	*headRef = SortedMerge(a, b);
+}
+
+struct Node* SortedMerge(struct Node* a, struct Node* b)
+{
+	struct Node* result = NULL;
+	/* Base cases */
+	if (a == NULL)
+		return(b);
+	else if (b == NULL)
+		return(a);
+
+	if (a->data <= b->data)
+	{
+		result = a;
+		result->next = SortedMerge(a->next, b);
+	}
+	else
+	{
+		result = b;
+		result->next = SortedMerge(a, b->next);
+	}
+	return(result);
+}
+void FrontBackSplit(struct Node* source, //hàm chia các nút của ds thành 2 phần 
+	struct Node** frontRef, struct Node** backRef) //front và back lưu địa chỉ của 2 mảng sau khi phân cách
+{
+	struct Node* fast;
+	struct Node* slow; // 4 3
+	if (source == NULL || source->next == NULL)
+	{                
+		*frontRef = source;
+		*backRef = NULL;
+	}
+	else 
+	{
+		slow = source;
+		fast = source->next;
+		while (fast != NULL)
+		{
+			fast = fast->next;
+			if (fast != NULL)
+			{
+				slow = slow->next;
+				fast = fast->next;
+			}
+		}
+		*frontRef = source; 
+		*backRef = slow->next;
+		slow->next = NULL;
+	}
+}
+void printList(struct Node *node)
+{
+	while (node != NULL)
+	{
+		cout<<" "<<  node -> data ;
+		node = node->next;
+	}
+}
+
+void push(struct Node** head_ref, int new_data) //Node ** là con trỏ đa cấp lưu địa chỉ của các con trỏ khác 
+{
+	/* allocate node */
+	struct Node* new_node =
+		(struct Node*) malloc(sizeof(struct Node));
+
+	new_node->data = new_data;
+
+	new_node->next = (*head_ref); 
+	(*head_ref) = new_node;
+}
+
+int main()
+{
+	struct Node* a = NULL;
+	push(&a, 15);
+	push(&a, 10);
+	push(&a, 5);
+	push(&a, 20);
+	push(&a, 3);
+	push(&a, 2);
+	cout << "The list is: ";
+	printList(a);
+	cout << endl;
+	MergeSort(&a);
+	cout<<"Sorted Linked List is: ";
+	printList(a);
+
+	getchar();
+	return 0;
+}
